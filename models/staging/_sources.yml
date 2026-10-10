@@ -1,0 +1,14 @@
+version: 2
+
+sources:
+  - name: bronze
+    database: icommerce
+    schema: bronze
+    tables:
+      - name: category
+      - name: sub_category
+      - name: product
+      - name: type_customer
+      - name: customer
+      - name: sale
+      - name: detail_sale
