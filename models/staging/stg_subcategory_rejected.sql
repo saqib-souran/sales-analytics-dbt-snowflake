@@ -6,7 +6,7 @@
     )
 }}
 select 
-    {{dbt_utils.generate_surrogate_key(['cd_subcategory', 'lib_subcategory', 'cd_category', 'rn'])}} as rejected_id,
+    {{dbt_utils.generate_surrogate_key(['cd_subcategory', 'lib_subcategory', 'cd_category', 'rn'])}} as rejection_id,
     cd_subcategory, lib_subcategory, cd_category,
     convert_timezone('Europe/Paris', current_timestamp()) as rejected_at,
     case

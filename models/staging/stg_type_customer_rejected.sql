@@ -6,7 +6,7 @@
     )
 }}
 select 
-    {{dbt_utils.generate_surrogate_key(['CD_TYPE_CUSTOMER', 'LIB_TYPE_CUSTOMER', 'rn'])}} as rejected_id, 
+    {{dbt_utils.generate_surrogate_key(['CD_TYPE_CUSTOMER', 'LIB_TYPE_CUSTOMER', 'rn'])}} as rejection_id, 
     CD_TYPE_CUSTOMER, LIB_TYPE_CUSTOMER,
     convert_timezone('Europe/Paris', current_timestamp()) as rejected_at,
     case

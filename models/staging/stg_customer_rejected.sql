@@ -8,7 +8,7 @@
 select 
     {{
         dbt_utils.generate_surrogate_key(['CUSTOMER_ID', 'LAST_NAME', 'FIRST_NAME', 'ADDRESS', 'POSTAL_CODE', 'CITY', 'COUNTRY', 'CD_TYPE_CUSTOMER', 'rn'])
-    }} as rejected_id, 
+    }} as rejection_id, 
     CUSTOMER_ID, LAST_NAME, FIRST_NAME, ADDRESS, POSTAL_CODE, CITY, COUNTRY, CD_TYPE_CUSTOMER,
     convert_timezone('Europe/Paris', current_timestamp()) as rejected_at,
     case

@@ -17,7 +17,7 @@ deduplicated_department as
 )
 select 
     row_number() over(order by CODE_DEPARTMENT) as id_dim_department,
-    CODE_DEPARTMENT as CODE_DEPARTMENT,
+    CODE_DEPARTMENT as cd_department,
     DEPARTMENT_NAME,
     id_dim_region
 from deduplicated_department d

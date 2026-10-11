@@ -8,7 +8,7 @@
 select 
     {{
         dbt_utils.generate_surrogate_key(['SALE_ID', 'CD_PRODUCT', 'QUANTITY_SOLD', 'SALE_PRICE', 'rn'])
-    }} as rejected_id, 
+    }} as rejection_id, 
     SALE_ID, CD_PRODUCT, QUANTITY_SOLD, SALE_PRICE,
     convert_timezone('Europe/Paris', current_timestamp()) as rejected_at,
     case

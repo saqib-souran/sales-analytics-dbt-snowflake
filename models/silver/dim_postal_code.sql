@@ -4,4 +4,4 @@ select distinct
     postal_commune_name,
 from {{ref('stg_file_zone_geographique')}} zg
 inner join {{ref('dim_department')}} d
-on zg.code_department = d.code_department
+on zg.code_department = d.cd_department
