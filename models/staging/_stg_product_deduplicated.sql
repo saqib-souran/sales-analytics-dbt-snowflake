@@ -1,14 +1,44 @@
-with cleaned_PRODUCT as 
-(
-select nullif(trim(CD_PRODUCT),'') as CD_PRODUCT, 
-       nullif(trim(regexp_replace(initcap(LIB_PRODUCT), '\\s+', ' ')),'') as LIB_PRODUCT,
-       nullif(replace(trim(regexp_replace(initcap(PRICE_PRODUCT), '\\s+', ' ')),',', '.'), '')::numeric(16, 4) as PRICE_PRODUCT,
-       nullif(trim(CD_SUBCATEGORY),'') as CD_SUBCATEGORY
-from {{source('bronze','product')}}
+with cleaned_product as (
+    select
+        nullif(trim(cd_product), '') as cd_product,
+
+        nullif(
+            trim(
+                regexp_replace(
+                    initcap(lib_product),
+                    '[[:space:]]+',
+                    ' '
+                )
+            ),
+            ''
+        ) as lib_product,
+
+        try_to_decimal(
+            nullif(
+                replace(
+                    regexp_replace(
+                        trim(to_varchar(price_product)),
+                        '[[:space:]]+',
+                        ''
+                    ),
+                    ',',
+                    '.'
+                ),
+                ''
+            ),
+            16,
+            4
+        ) as price_product,
+
+        nullif(trim(cd_subcategory), '') as cd_subcategory
+
+    from {{ source('bronze', 'product') }}
 )
-select *, 
+
+select
+    *,
     row_number() over (
-        partition by CD_PRODUCT 
-        order by LIB_PRODUCT
+        partition by cd_product
+        order by lib_product
     ) as rn
-from cleaned_PRODUCT
+from cleaned_product

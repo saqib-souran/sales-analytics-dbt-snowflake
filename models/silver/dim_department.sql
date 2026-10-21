@@ -16,7 +16,7 @@ deduplicated_department as
     from distinct_department
 )
 select 
-    row_number() over(order by CODE_DEPARTMENT) as id_dim_department,
+    {{ dbt_utils.generate_surrogate_key(['d.CODE_DEPARTMENT']) }} as id_dim_department,
     CODE_DEPARTMENT as cd_department,
     DEPARTMENT_NAME,
     id_dim_region

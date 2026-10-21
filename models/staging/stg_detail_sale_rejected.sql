@@ -14,8 +14,8 @@ select
     case
         when SALE_ID is null then 'missing sale identifier'
         when CD_PRODUCT is null then 'missing code product'
-        when QUANTITY_SOLD is null then 'missing quantity sold'
-        when SALE_PRICE is null then 'missing sale price'
+        when QUANTITY_SOLD is null then 'missing or invalid integer quantity'
+        when SALE_PRICE is null then 'missing or invalid sale price'
         when rn>1 then 'deduplicate key'
     end as rejected_reason
 from {{ref('_stg_detail_sale_deduplicated')}}

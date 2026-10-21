@@ -14,7 +14,7 @@ select
     case
         when CD_PRODUCT is null then 'missing category code'
         when LIB_PRODUCT is null then 'missing category description'
-        when PRICE_PRODUCT is null then 'missing price product'
+        when PRICE_PRODUCT is null then 'missing or invalid product price'
         when CD_SUBCATEGORY is null then 'missing code sub category'
         when rn>1 then 'deduplicate key'
     end as rejected_reason

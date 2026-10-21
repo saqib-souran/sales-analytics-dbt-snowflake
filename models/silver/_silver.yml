@@ -1,0 +1,78 @@
+version: 2
+
+models:
+  - name: dim_customer
+    description: "One row per observed customer version."
+    columns:
+      - name: id_dim_customer
+        tests:
+          - unique
+          - not_null
+      - name: customer_id
+        tests:
+          - not_null
+      - name: valid_from
+        tests:
+          - not_null
+
+  - name: dim_product
+    description: "One row per observed product version."
+    columns:
+      - name: id_dim_product
+        tests:
+          - unique
+          - not_null
+      - name: cd_product
+        tests:
+          - not_null
+      - name: valid_from
+        tests:
+          - not_null
+
+  - name: dim_calendar
+    columns:
+      - name: id_dim_calendar
+        tests:
+          - unique
+          - not_null
+      - name: dt_calendar
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_postal_code
+    description: "One row per commune identifier, despite the legacy model name."
+    columns:
+      - name: id_dim_postal_code
+        tests:
+          - unique
+          - not_null
+      - name: cd_postal
+        tests:
+          - unique
+          - not_null
+
+  - name: fact_sale
+    description: "One accepted product record per sale."
+    columns:
+      - name: sale_id
+        tests:
+          - not_null
+      - name: id_dim_customer
+        tests:
+          - not_null
+      - name: id_dim_product
+        tests:
+          - not_null
+      - name: id_dim_calendar
+        tests:
+          - not_null
+      - name: quantity_sold
+        tests:
+          - not_null
+      - name: sale_price
+        tests:
+          - not_null
+      - name: revenue_amount
+        tests:
+          - not_null

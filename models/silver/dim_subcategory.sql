@@ -1,5 +1,5 @@
 select
-    row_number() over(order by CD_SUBCATEGORY) as id_dim_subcategory,
+    {{ dbt_utils.generate_surrogate_key(['sc.cd_subcategory']) }} as id_dim_subcategory,
     CD_SUBCATEGORY, 
     LIB_SUBCATEGORY, 
     id_dim_category 

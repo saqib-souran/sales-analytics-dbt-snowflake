@@ -16,4 +16,4 @@ from {{ref('snap_customer')}} sc
     left outer join {{ref('dim_type_customer')}} tc
         on sc.CD_TYPE_CUSTOMER = tc.CD_TYPE_CUSTOMER
 where pc.cd_postal is null
-and tc.CD_TYPE_CUSTOMER is null
+or tc.CD_TYPE_CUSTOMER is null

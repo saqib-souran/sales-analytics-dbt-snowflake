@@ -1,15 +1,55 @@
-with cleaned_DETAIL_SALE as 
-(
-    select 
-        nullif(trim(SALE_ID),'') as SALE_ID, 
-        nullif(trim(CD_PRODUCT),'') as CD_PRODUCT,
-        nullif(trim(QUANTITY_SOLD),'')::INTEGER as QUANTITY_SOLD,
-        nullif(replace(trim(regexp_replace(SALE_PRICE, '\\s+', ' ')),',', '.'), '')::numeric(16, 4)       as SALE_PRICE
-    from {{source('bronze', 'detail_sale')}}
+with prepared_detail_sale as (
+    select
+        nullif(trim(sale_id), '') as sale_id,
+
+        nullif(trim(cd_product), '') as cd_product,
+
+        nullif(
+            trim(to_varchar(quantity_sold)),
+            ''
+        ) as quantity_text,
+
+        nullif(
+            replace(
+                regexp_replace(
+                    trim(to_varchar(sale_price)),
+                    '[[:space:]]+',
+                    ''
+                ),
+                ',',
+                '.'
+            ),
+            ''
+        ) as price_text
+
+    from {{ source('bronze', 'detail_sale') }}
+),
+
+cleaned_detail_sale as (
+    select
+        sale_id,
+        cd_product,
+
+        -- Accept whole-number quantities without rounding fractions.
+        case
+            when regexp_like(quantity_text, '^[+-]?[0-9]+$')
+                then try_to_decimal(quantity_text, 38, 0)
+            else null
+        end as quantity_sold,
+
+        try_to_decimal(
+            price_text,
+            16,
+            4
+        ) as sale_price
+
+    from prepared_detail_sale
 )
-select *, 
+
+select
+    *,
     row_number() over (
-        partition by SALE_ID, CD_PRODUCT
-        order by SALE_ID, CD_PRODUCT
+        partition by sale_id, cd_product
+        order by sale_id, cd_product
     ) as rn
-from cleaned_DETAIL_SALE
+from cleaned_detail_sale

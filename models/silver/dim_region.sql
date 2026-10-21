@@ -14,7 +14,7 @@ deduplicated_region as
     from distinct_category
 )
 select 
-    row_number() over(order by CODE_REGION) as id_dim_region,
+    {{ dbt_utils.generate_surrogate_key(['CODE_REGION']) }} as id_dim_region,
     CODE_REGION as CD_REGION,
     REGION_NAME,
     1 as id_dim_country

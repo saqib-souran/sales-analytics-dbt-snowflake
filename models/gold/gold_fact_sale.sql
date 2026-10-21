@@ -7,5 +7,5 @@ select
     quantity_sold,
     sale_price,
     revenue_amount,
-    sale_count
+    sale_line_count
 from {{ref('fact_sale')}}

@@ -1,5 +1,5 @@
 select
-    row_number() over (order by sp.dbt_scd_id) as id_dim_product,
+    sp.dbt_scd_id as id_dim_product,
     sp.dbt_valid_from as valid_from,
     sp.dbt_valid_to as valid_to,
     case when sp.dbt_valid_to is null then 1 else 0 end as is_current_version,
