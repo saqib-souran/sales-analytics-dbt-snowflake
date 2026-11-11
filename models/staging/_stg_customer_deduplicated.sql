@@ -1,18 +1,62 @@
-with cleaned_customer as 
-(
-select nullif(trim(CUSTOMER_ID),'') as CUSTOMER_ID, 
-       nullif(trim(regexp_replace(initcap(LAST_NAME), '\\s+', ' ')),'') as LAST_NAME,
-       nullif(trim(regexp_replace(initcap(FIRST_NAME), '\\s+', ' ')),'') as FIRST_NAME,
-       nullif(trim(regexp_replace(initcap(ADDRESS), '\\s+', ' ')),'') as ADDRESS,
-       nullif(trim(regexp_replace(POSTAL_CODE, '\\s+', ' ')),'') as POSTAL_CODE,
-       nullif(trim(regexp_replace(CITY, '\\s+', ' ')),'') as CITY,
-       nullif(trim(regexp_replace(initcap(COUNTRY), '\\s+', ' ')),'') as COUNTRY,
-       nullif(trim(CD_TYPE_CUSTOMER),'') as CD_TYPE_CUSTOMER
-from {{source('bronze','customer')}}
+
+WITH cleaned_customer AS (
+    SELECT
+        NULLIF(TRIM(CUSTOMER_ID), '') AS CUSTOMER_ID,
+
+        NULLIF(TRIM(REGEXP_REPLACE(
+            INITCAP(LAST_NAME), '\\s+', ' '
+        )), '') AS LAST_NAME,
+
+        NULLIF(TRIM(REGEXP_REPLACE(
+            INITCAP(FIRST_NAME), '\\s+', ' '
+        )), '') AS FIRST_NAME,
+
+        NULLIF(TRIM(REGEXP_REPLACE(
+            INITCAP(ADDRESS), '\\s+', ' '
+        )), '') AS ADDRESS,
+
+        NULLIF(TRIM(REGEXP_REPLACE(
+            POSTAL_CODE, '\\s+', ' '
+        )), '') AS POSTAL_CODE,
+
+        NULLIF(TRIM(REGEXP_REPLACE(
+            CITY, '\\s+', ' '
+        )), '') AS CITY,
+
+        NULLIF(TRIM(REGEXP_REPLACE(
+            INITCAP(COUNTRY), '\\s+', ' '
+        )), '') AS COUNTRY,
+
+        NULLIF(TRIM(CD_TYPE_CUSTOMER), '')
+            AS CD_TYPE_CUSTOMER,
+
+        INGESTED_AT
+
+    FROM {{ source('bronze', 'customer') }}
 )
-select *, 
-    row_number() over (
-        partition by CUSTOMER_ID 
-        order by LAST_NAME, FIRST_NAME
-    ) as rn
-from cleaned_customer
+
+SELECT
+    *,
+    ROW_NUMBER() OVER (
+        PARTITION BY CUSTOMER_ID
+        ORDER BY
+            CASE
+                WHEN INGESTED_AT IS NOT NULL
+                    AND CUSTOMER_ID IS NOT NULL
+                    AND LAST_NAME IS NOT NULL
+                    AND POSTAL_CODE IS NOT NULL
+                    AND CD_TYPE_CUSTOMER IS NOT NULL
+                THEN 0
+
+                WHEN INGESTED_AT IS NULL
+                THEN 1
+
+                ELSE 2
+            END,
+
+            INGESTED_AT DESC NULLS LAST,
+            LAST_NAME,
+            FIRST_NAME
+    ) AS rn
+
+FROM cleaned_customer

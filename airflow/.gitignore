@@ -1,0 +1,23 @@
+.env
+.env.*
+!.env.example
+data/
+processed/
+__pycache__/
+*.pyc
+logs/
+config/
+*.db
+*.generated
+
+# Airflow runtime files
+airflow/processed/
+airflow/logs/
+airflow/config/
+airflow/dags-backup/
+airflow/*.db
+airflow/*.generated
+
+# Airflow local data (allow safe examples only)
+airflow/data/*
+!airflow/data/CATEGORY.csv

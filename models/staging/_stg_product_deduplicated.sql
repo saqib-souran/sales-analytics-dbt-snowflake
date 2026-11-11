@@ -1,23 +1,24 @@
-with cleaned_product as (
-    select
-        nullif(trim(cd_product), '') as cd_product,
 
-        nullif(
-            trim(
-                regexp_replace(
-                    initcap(lib_product),
+WITH cleaned_product AS (
+    SELECT
+        NULLIF(TRIM(cd_product), '') AS cd_product,
+
+        NULLIF(
+            TRIM(
+                REGEXP_REPLACE(
+                    INITCAP(lib_product),
                     '[[:space:]]+',
                     ' '
                 )
             ),
             ''
-        ) as lib_product,
+        ) AS lib_product,
 
-        try_to_decimal(
-            nullif(
-                replace(
-                    regexp_replace(
-                        trim(to_varchar(price_product)),
+        TRY_TO_DECIMAL(
+            NULLIF(
+                REPLACE(
+                    REGEXP_REPLACE(
+                        TRIM(TO_VARCHAR(price_product)),
                         '[[:space:]]+',
                         ''
                     ),
@@ -28,17 +29,35 @@ with cleaned_product as (
             ),
             16,
             4
-        ) as price_product,
+        ) AS price_product,
 
-        nullif(trim(cd_subcategory), '') as cd_subcategory
+        NULLIF(TRIM(cd_subcategory), '') AS cd_subcategory,
 
-    from {{ source('bronze', 'product') }}
+        INGESTED_AT
+
+    FROM {{ source('bronze', 'product') }}
 )
 
-select
+SELECT
     *,
-    row_number() over (
-        partition by cd_product
-        order by lib_product
-    ) as rn
-from cleaned_product
+    ROW_NUMBER() OVER (
+        PARTITION BY cd_product
+        ORDER BY
+            CASE
+                WHEN INGESTED_AT IS NOT NULL
+                    AND cd_product IS NOT NULL
+                    AND lib_product IS NOT NULL
+                    AND price_product IS NOT NULL
+                    AND cd_subcategory IS NOT NULL
+                THEN 0
+
+                WHEN INGESTED_AT IS NULL THEN 1
+
+                ELSE 2
+            END,
+
+            INGESTED_AT DESC NULLS LAST,
+            lib_product
+    ) AS rn
+
+FROM cleaned_product

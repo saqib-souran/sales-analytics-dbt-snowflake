@@ -1,0 +1,31 @@
+
+services:
+  airflow-lite:
+    image: apache/airflow:3.3.2
+    command: standalone
+
+    ports:
+      - "127.0.0.1:8080:8080"
+
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__CORE__PARALLELISM: "2"
+      AIRFLOW__CORE__MAX_ACTIVE_TASKS_PER_DAG: "2"
+      AIRFLOW__CORE__MAX_ACTIVE_RUNS_PER_DAG: "1"
+      AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_ALL_ADMINS: "True"
+      PYTHONPATH: /opt/airflow/src
+
+    volumes:
+      - airflow-lite-data:/opt/airflow
+      - ./dags:/opt/airflow/dags
+      - ./data:/opt/airflow/data:ro
+      - ./processed:/opt/airflow/processed
+      - ./src:/opt/airflow/src:ro
+
+    mem_limit: 4g
+    cpus: 2
+    restart: "no"
+
+volumes:
+  airflow-lite-data:
