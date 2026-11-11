@@ -1,7 +1,8 @@
-
 services:
   airflow-lite:
-    image: apache/airflow:3.3.2
+    build:
+      context: .
+      dockerfile: Dockerfile
     command: standalone
 
     ports:
@@ -22,6 +23,7 @@ services:
       - ./data:/opt/airflow/data:ro
       - ./processed:/opt/airflow/processed
       - ./src:/opt/airflow/src:ro
+      - ../:/opt/airflow/dbt_project
 
     mem_limit: 4g
     cpus: 2
