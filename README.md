@@ -6,21 +6,9 @@ A Data Engineering project that takes sales CSV files from a local folder and tu
 
 **In short:** place a CSV in the incoming folder → the Python watcher triggers Airflow → Airflow loads Snowflake Bronze → dbt updates Staging, Silver, and Gold and runs tests. No manual dbt command is needed during normal operation.
 
-## Architecture
+## Pipeline Architecture
 
-```mermaid
-flowchart LR
-    A[CSV files] --> B[Python file watcher]
-    B --> C[Airflow DAG]
-    C --> D[(Snowflake Bronze)]
-    D --> E[dbt Staging]
-    F[Geographic seed] --> E
-    E --> G[dbt SCD2 snapshots]
-    E --> H[dbt Silver]
-    G --> H
-    H --> I[dbt Gold]
-    I --> J[Data quality tests]
-```
+![ICOMMERCE End-to-End Data Pipeline](assets/pipeline-architecture.svg)
 
 The Airflow DAG is event-driven (`schedule=None`). A local Python watcher detects new files and submits a DAG run. Airflow verifies ingestion before starting the dbt pipeline, and waits for all seven original datasets before the first dbt run.
 
