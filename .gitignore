@@ -31,6 +31,6 @@ profiles.yml
 /airflow/*.generated
 
 # Local editor and OS files
-.vscode/
+/airflow/.vscode/
 .DS_Store
 Thumbs.db
