@@ -1,4 +1,4 @@
-"""Offline checks for the Python dbt runner and Airflow handoff."""
+"""Tests for the dbt runner and Airflow connection setup."""
 from pathlib import Path
 import importlib.util
 import sys
@@ -21,7 +21,7 @@ def load_runner():
 
 
 class PythonRunnerTests(TestCase):
-    def test_same_six_commands_as_powershell(self):
+    def test_dbt_commands_run_in_order(self):
         module = load_runner()
         run = mock.Mock()
         with mock.patch.dict("os.environ", {"DBT_EXECUTABLE": "dbt"}):
@@ -31,9 +31,13 @@ class PythonRunnerTests(TestCase):
             "deps", "seed", "run", "snapshot", "build", "test",
         ]
         self.assertEqual([c.args[0][1] for c in run.call_args_list], expected)
-        for c in run.call_args_list:
-            self.assertTrue(c.kwargs["check"])
-            self.assertEqual(c.kwargs["cwd"], module.PROJECT_DIR)
+        for call in run.call_args_list:
+            self.assertTrue(call.kwargs["check"])
+            self.assertEqual(call.kwargs["cwd"], module.PROJECT_DIR)
+            if call.args[0][1] == "deps":
+                self.assertNotIn("--no-partial-parse", call.args[0])
+            else:
+                self.assertIn("--no-partial-parse", call.args[0])
 
     def test_baseline_guard(self):
         ready = SimpleNamespace(get_first=lambda sql: (True,))

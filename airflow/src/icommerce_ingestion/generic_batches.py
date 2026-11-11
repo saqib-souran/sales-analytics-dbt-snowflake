@@ -1,8 +1,4 @@
-"""Convert allowlisted source CSV files to validated UTF-8 pipe CSV batches.
-
-No business-key deduplication: that belongs in existing dbt staging.
-No Airflow dependency: unit-testable on Windows.
-"""
+"""Validate and normalize source CSV files before loading Bronze."""
 from __future__ import annotations
 
 import csv
@@ -38,7 +34,7 @@ def _decode(source: Path) -> str:
     try:
         return data.decode("utf-8-sig")
     except UnicodeDecodeError:
-        # Some original CSV bytes use a Western European legacy encoding.
+        # Some source files use a legacy Western European encoding.
         return data.decode("iso-8859-15")
 
 
@@ -47,12 +43,7 @@ def _squash(value: str) -> str:
 
 
 def _repaired_rows(text: str, columns: tuple[str, ...]) -> Iterator[list[str]]:
-    """Repair known CATEGORY/SUB_CATEGORY split-line formats.
-
-    CATEGORY example:    C004|Other + next line 'categories'
-    SUB_CATEGORY example: SC013|Filing + next line 'Cabinets|C003'
-    Deliberately reject quote syntax in this simple repair mode.
-    """
+    """Join split description fields in CATEGORY and SUB_CATEGORY files."""
     count = len(columns)
     current: list[str] | None = None
     lines = iter(enumerate(text.splitlines(), start=1))
@@ -67,7 +58,6 @@ def _repaired_rows(text: str, columns: tuple[str, ...]) -> Iterator[list[str]]:
             raise ValueError(f"Quoted fields are not supported by multiline repair (line {line_no})")
         parts = [_squash(x) for x in physical.split("|")]
 
-        # A partial row continues from the previous physical line.
         if current is not None and len(current) < count:
             current[-1] = _squash(current[-1] + " " + parts[0])
             current.extend(parts[1:])
@@ -75,7 +65,6 @@ def _repaired_rows(text: str, columns: tuple[str, ...]) -> Iterator[list[str]]:
                 raise ValueError(f"Too many fields in joined record at line {line_no}")
             continue
 
-        # A one-part line after a complete row extends the description.
         if len(parts) == 1 and current is not None:
             current[1] = _squash(current[1] + " " + parts[0])
             continue

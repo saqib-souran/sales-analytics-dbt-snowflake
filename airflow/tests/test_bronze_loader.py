@@ -1,4 +1,4 @@
-"""Command to run this unit test: python -m unittest discover -s airflow/tests -p test_bronze_loader.py -v"""
+"""Tests for CSV preparation and Bronze loading."""
 import csv
 from pathlib import Path
 import sys
@@ -14,7 +14,7 @@ from icommerce_ingestion.bronze_loader import (
 )
 
 
-class FinalBronzeTests(unittest.TestCase):
+class BronzeLoaderTests(unittest.TestCase):
     def test_baseline_all_seven(self):
         self.assertEqual(set(BASELINE), set(DATASETS))
         self.assertEqual(set(BASELINE_COUNTS), set(DATASETS))

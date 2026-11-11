@@ -1,10 +1,10 @@
-# dbt-generated files
-target/
-logs/
-dbt_packages/
+# dbt output
+/target/
+/logs/
+/dbt_packages/
 .user.yml
 
-# Local Python environments and caches
+# Local Python files
 .venv/
 venv/
 dbt-env/
@@ -12,7 +12,7 @@ __pycache__/
 *.pyc
 .pytest_cache/
 
-# Credentials and local configuration
+# Secrets and local settings
 profiles.yml
 .env
 .env.*
@@ -21,8 +21,16 @@ profiles.yml
 *.p8
 *.key
 
-# Local editors and operating-system files
+# Airflow runtime files
+/airflow/data/
+/airflow/processed/
+/airflow/logs/
+/airflow/config/
+/airflow/dags-backup/
+/airflow/*.db
+/airflow/*.generated
+
+# Local editor and OS files
+.vscode/
 .DS_Store
 Thumbs.db
-
-# Airflow runtime data is excluded separately in airflow/.gitignore

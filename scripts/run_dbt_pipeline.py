@@ -1,4 +1,4 @@
-"""Run the existing ICOMMERCE dbt project in dependency order."""
+"""Run staging, snapshots, Silver, Gold, and dbt tests in order."""
 from __future__ import annotations
 
 import os
@@ -23,7 +23,10 @@ def run_pipeline(runner=subprocess.run) -> None:
         raise RuntimeError("dbt executable not found; activate your dbt environment")
     for command in COMMANDS:
         print("Running dbt " + " ".join(command), flush=True)
-        runner([dbt, *command, *([] if command[0] == "deps" else ["--no-partial-parse"])], cwd=PROJECT_DIR, check=True)
+        args = [dbt, *command]
+        if command[0] != "deps":
+            args.append("--no-partial-parse")
+        runner(args, cwd=PROJECT_DIR, check=True)
 
 
 if __name__ == "__main__":

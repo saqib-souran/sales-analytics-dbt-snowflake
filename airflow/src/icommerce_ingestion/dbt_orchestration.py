@@ -1,4 +1,4 @@
-"""Launch the existing dbt project from Airflow after Bronze ingestion."""
+"""Run dbt after the seven original Bronze datasets are available."""
 from __future__ import annotations
 
 import os
@@ -15,7 +15,7 @@ RUNNER = PROJECT_DIR / "scripts/run_dbt_pipeline.py"
 
 
 def baselines_ready(hook) -> bool:
-    """Only run dbt after all seven original datasets have been loaded."""
+    """Check whether all original CSVs have been loaded."""
     checks = [
         f"(SELECT COUNT(*) FROM {table_for(dataset)} "
         f"WHERE SOURCE_SHA256 = '{digest}') = {BASELINE_COUNTS[dataset]}"
@@ -51,7 +51,7 @@ def _profile(has_role: bool) -> str:
 
 
 def run_dbt(connection, runner=subprocess.run) -> None:
-    """Use the already-configured Airflow Snowflake connection for dbt."""
+    """Run dbt using Snowflake credentials from the Airflow connection."""
     if not RUNNER.is_file() or not (PROJECT_DIR / "dbt_project.yml").is_file():
         raise FileNotFoundError("The dbt project/scripts are not mounted inside Docker")
     if not PYTHON.is_file() or not DBT.is_file():
@@ -80,7 +80,7 @@ def run_dbt(connection, runner=subprocess.run) -> None:
     if role:
         env["DBT_SNOWFLAKE_ROLE"] = role
 
-    # Profile contains environment variable references, not credentials.
+    # Keep credentials out of the temporary profiles.yml file.
     with tempfile.TemporaryDirectory(prefix="icommerce-dbt-") as folder:
         (Path(folder) / "profiles.yml").write_text(_profile(bool(role)), encoding="utf-8")
         env["DBT_PROFILES_DIR"] = folder

@@ -1,8 +1,4 @@
-"""Final seven-dataset ICOMMERCE ingest: full baseline once, then append batches.
-
-Uses the existing validated generic_batches parser and Snowflake's table stages.
-No temporary business tables, deduplication, or dbt dependencies.
-"""
+"""Load original and incremental CSV batches into Snowflake Bronze."""
 from __future__ import annotations
 
 import csv
@@ -10,13 +6,13 @@ from datetime import datetime, timezone
 from pathlib import Path
 import uuid
 
-from icommerce_ingestion.datasets import DATASETS, get_dataset
+from icommerce_ingestion.datasets import get_dataset
 from icommerce_ingestion.generic_batches import digest_file, validate_batch_id, verify_batch
 
 DB_SCHEMA = "ICOMMERCE.BRONZE"
 STAGE = "ICOMMERCE.BRONZE.ICOMMERCE_CSV_STAGE"
 
-# Hashes of the seven originals validated in this project (unmodified files).
+# Checksums and row counts of the original seven CSV files.
 BASELINE = {
     "CATEGORY": "ede458dfe4906b5b1fd33e45e1d0b48a59499f9ff32d7604c2ee5d5940cf7156",
     "SUB_CATEGORY": "8f6ad2425b05ce66eb397422089612fe389556dac855834fdacefa95802aeeef",
@@ -53,7 +49,7 @@ def validate_mode(dataset: str, batch_id: str, mode: str) -> None:
 
 
 def table_for(dataset: str) -> str:
-    get_dataset(dataset)  # strict allowlist of identifiers
+    get_dataset(dataset)
     return f"{DB_SCHEMA}.{dataset}"
 
 
@@ -64,7 +60,7 @@ def stage_filename(dataset: str, digest: str) -> str:
 
 
 def build_bronze_file(info: dict, mode: str) -> dict:
-    
+    """Add an ingestion timestamp to the validated CSV batch."""
     verify_batch(info)
     dataset, digest = info["dataset"], info["batch_id"]
     validate_mode(dataset, digest, mode)
@@ -173,8 +169,7 @@ def ingest_bronze(hook, info: dict) -> dict:
 
     stage = f"@{STAGE}"
     path = Path(info["bronze_path"])
-    # Identical checksum => stage filename is stable. Overwrite allows re-stage
-    # after a previous failed attempt; the target checksum is checked first.
+    # Re-stage a batch if a previous COPY failed; duplicates are checked above.
     hook.run(f"PUT 'file://{path.as_posix()}' {stage} AUTO_COMPRESS=TRUE OVERWRITE=TRUE")
     records = hook.get_records(build_copy_sql(dataset, digest))
     if len(records) != 1 or len(records[0]) < 4:
@@ -201,10 +196,7 @@ def verify_bronze(hook, info: dict) -> dict:
 
 
 def cleanup_prepared(info: dict, hook=None) -> None:
-    """Clean disposable normalized/staging CSVs after VERIFIED success only.
-
-    The raw queued file is intentionally retained for troubleshooting/replay.
-    """
+    """Remove prepared files; keep the original queued CSV for retries."""
     validate_mode(info["dataset"], info["batch_id"], info["mode"])
     if hook is not None:
         hook.run(f"REMOVE @{STAGE}/{stage_filename(info['dataset'], info['batch_id'])}")
