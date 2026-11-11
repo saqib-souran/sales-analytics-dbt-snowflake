@@ -64,12 +64,7 @@ def stage_filename(dataset: str, digest: str) -> str:
 
 
 def build_bronze_file(info: dict, mode: str) -> dict:
-    """Augment the existing normalized CSV with checksum and UTC ingest time.
-
-    The original preparer already wrote source_sha256. Initial rows are a
-    historical baseline (NULL INGESTED_AT); incremental rows get one UTC time.
-    Repeated business keys in the initial sources are intentionally preserved.
-    """
+    
     verify_batch(info)
     dataset, digest = info["dataset"], info["batch_id"]
     validate_mode(dataset, digest, mode)

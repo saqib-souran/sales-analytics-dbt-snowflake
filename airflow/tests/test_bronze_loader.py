@@ -1,4 +1,4 @@
-"""Offline tests: run via python -m unittest discover -s airflow/tests -p 'test_*.py'."""
+"""Command to run this unit test: python -m unittest discover -s airflow/tests -p test_bronze_loader.py -v"""
 import csv
 from pathlib import Path
 import sys

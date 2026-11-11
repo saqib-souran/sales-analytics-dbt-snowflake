@@ -1,4 +1,4 @@
-"""Run without Airflow or Snowflake: python -m unittest discover -s airflow/tests -p test_generic_batches.py -v"""
+"""Command to run this unit test: python -m unittest discover -s airflow/tests -p test_generic_batches.py -v"""
 import csv
 import sys
 import tempfile
